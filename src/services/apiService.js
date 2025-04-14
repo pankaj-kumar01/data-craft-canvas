@@ -1,5 +1,4 @@
 
-import axios from 'axios';
 import { resolveTemplateVariables, resolveTemplateObject, safeJsonParse } from '../utils/templating';
 
 /**
@@ -46,8 +45,14 @@ export const executeHttpRequest = async (nodeData, nodes) => {
     // Resolve template variables in query params
     params = resolveTemplateObject(params, nodes);
     
+    // Build URL with query parameters
+    const urlWithParams = new URL(url);
+    Object.entries(params).forEach(([key, value]) => {
+      urlWithParams.searchParams.append(key, value);
+    });
+    
     // Prepare request body
-    let data = null;
+    let body = null;
     if (nodeData.body && nodeData.method !== 'GET') {
       try {
         // If body is a string, try to parse it as JSON
@@ -56,14 +61,14 @@ export const executeHttpRequest = async (nodeData, nodes) => {
           const resolvedBody = resolveTemplateVariables(nodeData.body, nodes);
           try {
             // Try to parse as JSON
-            data = JSON.parse(resolvedBody);
+            body = JSON.parse(resolvedBody);
           } catch (error) {
             // If not valid JSON, use as is
-            data = resolvedBody;
+            body = resolvedBody;
           }
         } else if (typeof nodeData.body === 'object') {
           // If already an object, use as is
-          data = resolveTemplateObject(nodeData.body, nodes);
+          body = resolveTemplateObject(nodeData.body, nodes);
         }
       } catch (error) {
         console.error('Error processing request body:', error);
@@ -71,46 +76,49 @@ export const executeHttpRequest = async (nodeData, nodes) => {
     }
     
     // Handle form data if provided (for POST requests)
+    let formData;
     if (nodeData.formData && Object.keys(nodeData.formData).length > 0 && nodeData.method !== 'GET') {
-      const formData = new FormData();
+      formData = new FormData();
       Object.entries(resolveTemplateObject(nodeData.formData, nodes)).forEach(([key, value]) => {
         formData.append(key, value);
       });
-      data = formData;
+      body = formData;
     }
     
     // Execute the request
-    const response = await axios({
+    const options = {
       method: nodeData.method || 'GET',
-      url,
-      headers,
-      params,
-      data,
-      timeout: 30000, // 30 second timeout
-    });
+      headers: formData ? {} : { ...headers, 'Content-Type': 'application/json' },
+      body: formData || (body && nodeData.method !== 'GET' ? JSON.stringify(body) : undefined)
+    };
+    
+    // Don't add content-type for FormData (browser will set it with boundary)
+    if (formData && options.headers['Content-Type']) {
+      delete options.headers['Content-Type'];
+    }
+    
+    const response = await fetch(urlWithParams.toString(), options);
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      data = await response.text();
+    }
     
     return {
       status: response.status,
       statusText: response.statusText,
-      data: response.data,
-      headers: response.headers,
+      data,
+      headers: Object.fromEntries([...response.headers.entries()]),
     };
   } catch (error) {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      return {
-        error: true,
-        status: error.response.status,
-        statusText: error.response.statusText,
-        data: error.response.data,
-        headers: error.response.headers,
-      };
-    } else if (error.request) {
-      // The request was made but no response was received
-      throw new Error('No response received from server');
+    if (error.name === 'AbortError') {
+      throw new Error('Request was aborted');
+    } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      throw new Error('Network error or CORS issue');
     } else {
-      // Something happened in setting up the request that triggered an Error
       throw new Error(`Request failed: ${error.message}`);
     }
   }
@@ -152,38 +160,26 @@ export const executeGraphQLRequest = async (nodeData, nodes) => {
     }
     
     // Execute the GraphQL request
-    const response = await axios({
+    const response = await fetch(endpoint, {
       method: 'POST',
-      url: endpoint,
       headers: {
         'Content-Type': 'application/json',
       },
-      data: {
+      body: JSON.stringify({
         query,
         variables,
-      },
-      timeout: 30000, // 30 second timeout
+      }),
     });
+    
+    const data = await response.json();
     
     return {
       status: response.status,
       statusText: response.statusText,
-      data: response.data,
-      headers: response.headers,
+      data,
+      headers: Object.fromEntries([...response.headers.entries()]),
     };
   } catch (error) {
-    if (error.response) {
-      return {
-        error: true,
-        status: error.response.status,
-        statusText: error.response.statusText,
-        data: error.response.data,
-        headers: error.response.headers,
-      };
-    } else if (error.request) {
-      throw new Error('No response received from server');
-    } else {
-      throw new Error(`GraphQL request failed: ${error.message}`);
-    }
+    throw new Error(`GraphQL request failed: ${error.message}`);
   }
 };

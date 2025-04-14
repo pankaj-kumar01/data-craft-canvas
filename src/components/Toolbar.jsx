@@ -9,13 +9,11 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react';
-import useFlowStore from '../stores/flowStore';
+import { useFlow } from '../contexts/FlowContext';
 import { toast } from '../components/ui/use-toast';
 
 const Toolbar = ({ onAddNode }) => {
-  const exportFlow = useFlowStore((state) => state.exportFlow);
-  const importFlow = useFlowStore((state) => state.importFlow);
-  const resetFlow = useFlowStore((state) => state.resetFlow);
+  const { exportFlow, importFlow, resetFlow } = useFlow();
   
   const handleExport = () => {
     const flow = exportFlow();

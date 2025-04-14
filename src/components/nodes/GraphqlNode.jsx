@@ -4,13 +4,12 @@ import { Handle, Position } from '@xyflow/react';
 import { ChevronDown, ChevronUp, Play } from 'lucide-react';
 import { executeGraphQLRequest } from '../../services/apiService';
 import { formatJson } from '../../utils/templating';
-import useFlowStore from '../../stores/flowStore';
+import { useFlow } from '../../contexts/FlowContext';
 
 const GraphqlNode = ({ id, data }) => {
   const [isCollapsed, setIsCollapsed] = useState(data.isCollapsed || false);
   
-  const updateNodeData = useFlowStore((state) => state.updateNodeData);
-  const nodes = useFlowStore((state) => state.nodes);
+  const { updateNodeData, nodes } = useFlow();
   
   const handleToggleCollapse = () => {
     const newCollapsedState = !isCollapsed;

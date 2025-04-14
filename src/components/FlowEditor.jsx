@@ -10,7 +10,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import useFlowStore from '../stores/flowStore';
+import { useFlow } from '../contexts/FlowContext';
 import Toolbar from './Toolbar';
 import ContextMenu from './ContextMenu';
 
@@ -38,7 +38,7 @@ const FlowEditor = () => {
     addNode,
     showContextMenu,
     hideContextMenu
-  } = useFlowStore();
+  } = useFlow();
   
   const onAddNode = useCallback(
     (type) => {

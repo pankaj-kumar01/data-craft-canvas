@@ -1,0 +1,156 @@
+
+/* Node Styles */
+.react-flow__node {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  width: 280px;
+}
+
+/* Node Header Styles */
+.node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  color: white;
+  font-weight: 500;
+}
+
+.node-header.start {
+  background-color: #FF8A65;
+}
+
+.node-header.http {
+  background-color: #42A5F5;
+}
+
+.node-header.graphql {
+  background-color: #AB47BC;
+}
+
+/* Node Content Styles */
+.node-content {
+  padding: 12px;
+  background-color: white;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Start Node Styles */
+.react-flow__node-start {
+  border: 1px solid #FFCCBC;
+}
+
+/* HTTP Node Styles */
+.http-node {
+  border: 1px solid #BBDEFB;
+}
+
+/* GraphQL Node Styles */
+.graphql-node {
+  border: 1px solid #E1BEE7;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background-color: #f8fafc;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Tabs Styles */
+.tabs {
+  display: flex;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tab {
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: #3b82f6;
+}
+
+.tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+/* Response Panel Styles */
+.response-panel {
+  margin-top: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.response-panel.success .response-header {
+  background-color: #10b981;
+}
+
+.response-panel.error .response-header {
+  background-color: #ef4444;
+}
+
+.response-header {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: white;
+  font-weight: 500;
+}
+
+.response-content {
+  padding: 8px;
+  max-height: 200px;
+  overflow: auto;
+  font-size: 12px;
+  font-family: monospace;
+  background-color: #f8fafc;
+}
+
+/* Button Styles in the toolbar */
+.btn-toolbar {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Dropdown Menu Styles */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  min-width: 150px;
+  margin-top: 4px;
+  border-radius: 6px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+}

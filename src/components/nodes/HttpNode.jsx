@@ -4,7 +4,7 @@ import { Handle, Position } from '@xyflow/react';
 import { ChevronDown, ChevronUp, Play } from 'lucide-react';
 import { executeHttpRequest } from '../../services/apiService';
 import { formatJson } from '../../utils/templating';
-import useFlowStore from '../../stores/flowStore';
+import { useFlow } from '../../contexts/FlowContext';
 
 const httpMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'];
 
@@ -12,8 +12,7 @@ const HttpNode = ({ id, data }) => {
   const [activeTab, setActiveTab] = useState(data.activeTab || 'headers');
   const [isCollapsed, setIsCollapsed] = useState(data.isCollapsed || false);
   
-  const updateNodeData = useFlowStore((state) => state.updateNodeData);
-  const nodes = useFlowStore((state) => state.nodes);
+  const { updateNodeData, nodes } = useFlow();
   
   const handleToggleCollapse = () => {
     const newCollapsedState = !isCollapsed;

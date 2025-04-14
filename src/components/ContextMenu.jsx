@@ -1,14 +1,16 @@
 
 import React from 'react';
 import { Trash2, Copy } from 'lucide-react';
-import useFlowStore from '../stores/flowStore';
+import { useFlow } from '../contexts/FlowContext';
 
 const ContextMenu = () => {
-  const contextMenu = useFlowStore((state) => state.contextMenu);
-  const hideContextMenu = useFlowStore((state) => state.hideContextMenu);
-  const deleteNode = useFlowStore((state) => state.deleteNode);
-  const deleteEdge = useFlowStore((state) => state.deleteEdge);
-  const duplicateNode = useFlowStore((state) => state.duplicateNode);
+  const { 
+    contextMenu, 
+    hideContextMenu, 
+    deleteNode, 
+    deleteEdge, 
+    duplicateNode 
+  } = useFlow();
   
   if (!contextMenu.visible) {
     return null;
