@@ -1,9 +1,19 @@
 
 import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { addEdge, applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 
 const STORAGE_KEY = 'flow-editor-state';
+
+// ID generation helper functions
+const generateNodeId = (type) => {
+  const timestamp = Date.now();
+  return `${type}-${timestamp}`;
+};
+
+const generateEdgeId = (source, target) => {
+  const timestamp = Date.now();
+  return `edge-${source}-${target}-${timestamp}`;
+};
 
 // Initial node when creating a new flow
 const getInitialNodes = () => [
@@ -89,7 +99,7 @@ export const FlowProvider = ({ children }) => {
     (connection) => {
       const newEdge = {
         ...connection,
-        id: `edge-${connection.source}-${connection.target}-${uuidv4().slice(0, 8)}`,
+        id: generateEdgeId(connection.source, connection.target),
         animated: false
       };
       setEdges((eds) => addEdge(newEdge, eds));
@@ -140,7 +150,7 @@ export const FlowProvider = ({ children }) => {
         return;
       }
       
-      const id = `${type}-${uuidv4().slice(0, 8)}`;
+      const id = generateNodeId(type);
       const newNode = {
         id,
         position,
@@ -189,7 +199,7 @@ export const FlowProvider = ({ children }) => {
       const node = nodes.find(n => n.id === nodeId);
       if (!node) return;
       
-      const newId = `${node.data.type}-${uuidv4().slice(0, 8)}`;
+      const newId = generateNodeId(node.data.type);
       const newNode = {
         ...node,
         id: newId,
