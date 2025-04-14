@@ -1,5 +1,5 @@
 
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -27,7 +27,7 @@ const nodeTypes = {
 
 const FlowEditor = () => {
   const reactFlowWrapper = useRef(null);
-  const { project } = useReactFlow();
+  const reactFlowInstance = useReactFlow();
   
   const {
     nodes,
@@ -42,16 +42,19 @@ const FlowEditor = () => {
   
   const onAddNode = useCallback(
     (type) => {
+      if (!reactFlowWrapper.current || !reactFlowInstance) return;
+      
       // Get the center position of the viewport
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const position = project({
+      const position = reactFlowInstance.project({
         x: (reactFlowBounds.width / 2) - 140,
         y: (reactFlowBounds.height / 2) - 100
       });
       
+      // Add the node with the calculated position
       addNode(type, position);
     },
-    [project, addNode]
+    [reactFlowInstance, addNode]
   );
   
   const onNodeContextMenu = useCallback(
@@ -95,22 +98,6 @@ const FlowEditor = () => {
   const onPaneClick = useCallback(() => {
     hideContextMenu();
   }, [hideContextMenu]);
-  
-  // Ensure React Flow is initialized properly
-  useEffect(() => {
-    const container = reactFlowWrapper.current;
-    if (container) {
-      const observer = new ResizeObserver(() => {
-        window.dispatchEvent(new Event('resize'));
-      });
-      
-      observer.observe(container);
-      
-      return () => {
-        observer.disconnect();
-      };
-    }
-  }, []);
   
   return (
     <div className="flow-editor w-full h-screen" ref={reactFlowWrapper}>
