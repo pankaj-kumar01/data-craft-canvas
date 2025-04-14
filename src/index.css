@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 210 100% 50%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -35,19 +36,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -98,4 +92,131 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* React Flow Specific Styles */
+.react-flow__node {
+  @apply border rounded-md shadow-md bg-white;
+  width: 280px;
+}
+
+.react-flow__node.selected {
+  @apply border-2 border-node-border-selected;
+}
+
+.react-flow__handle {
+  @apply bg-blue-500 border-2 border-white w-3 h-3;
+}
+
+.react-flow__edge-path {
+  @apply stroke-2 stroke-gray-400;
+}
+
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
+  @apply stroke-blue-500;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.nodrag {
+  pointer-events: all;
+}
+
+.node-header {
+  @apply flex items-center justify-between px-3 py-2 rounded-t-md text-white font-medium;
+}
+
+.node-header.start {
+  @apply bg-node-header-start;
+}
+
+.node-header.http {
+  @apply bg-node-header-http;
+}
+
+.node-header.graphql {
+  @apply bg-node-header-graphql;
+}
+
+.node-content {
+  @apply p-3;
+}
+
+.form-group {
+  @apply mb-3;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.form-input {
+  @apply w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.form-select {
+  @apply w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.form-textarea {
+  @apply w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.tabs {
+  @apply flex border-b mb-3;
+}
+
+.tab {
+  @apply px-4 py-2 text-sm font-medium cursor-pointer;
+}
+
+.tab.active {
+  @apply border-b-2 border-blue-500 text-blue-500;
+}
+
+.response-panel {
+  @apply mt-3 border rounded-md;
+}
+
+.response-header {
+  @apply flex items-center justify-between px-3 py-2 border-b bg-gray-50;
+}
+
+.response-content {
+  @apply p-3 max-h-40 overflow-auto;
+}
+
+.success .response-header {
+  @apply bg-green-50 text-green-700 border-green-200;
+}
+
+.error .response-header {
+  @apply bg-red-50 text-red-700 border-red-200;
+}
+
+.json-key {
+  @apply text-purple-600;
+}
+
+.json-value {
+  @apply text-blue-600;
+}
+
+.json-string {
+  @apply text-green-600;
+}
+
+.json-number {
+  @apply text-orange-600;
+}
+
+.json-boolean {
+  @apply text-red-600;
+}
+
+.json-null {
+  @apply text-gray-600;
 }
