@@ -1,5 +1,5 @@
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -27,7 +27,7 @@ const nodeTypes = {
 
 const FlowEditor = () => {
   const reactFlowWrapper = useRef(null);
-  const reactFlowInstance = useReactFlow();
+  const [rfInstance, setRfInstance] = useState(null);
   
   const {
     nodes,
@@ -42,19 +42,24 @@ const FlowEditor = () => {
   
   const onAddNode = useCallback(
     (type) => {
-      if (!reactFlowWrapper.current || !reactFlowInstance) return;
+      if (!reactFlowWrapper.current || !rfInstance) {
+        console.log('Cannot add node: React Flow instance not available');
+        return;
+      }
       
       // Get the center position of the viewport
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const position = reactFlowInstance.project({
+      const position = rfInstance.project({
         x: (reactFlowBounds.width / 2) - 140,
         y: (reactFlowBounds.height / 2) - 100
       });
       
+      console.log('Adding node of type:', type, 'at position:', position);
+      
       // Add the node with the calculated position
       addNode(type, position);
     },
-    [reactFlowInstance, addNode]
+    [rfInstance, addNode]
   );
   
   const onNodeContextMenu = useCallback(
@@ -98,6 +103,11 @@ const FlowEditor = () => {
   const onPaneClick = useCallback(() => {
     hideContextMenu();
   }, [hideContextMenu]);
+
+  const onInit = useCallback((reactFlowInstance) => {
+    console.log('Flow initialized', reactFlowInstance);
+    setRfInstance(reactFlowInstance);
+  }, []);
   
   return (
     <div className="flow-editor w-full h-screen" ref={reactFlowWrapper}>
@@ -111,6 +121,7 @@ const FlowEditor = () => {
         onEdgeContextMenu={onEdgeContextMenu}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
+        onInit={onInit}
         fitView
         attributionPosition="bottom-right"
         minZoom={0.2}

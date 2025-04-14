@@ -86,8 +86,11 @@ const Toolbar = ({ onAddNode }) => {
   };
 
   const handleAddNodeClick = (type) => {
+    console.log('Add node button clicked:', type);
     if (onAddNode) {
       onAddNode(type);
+    } else {
+      console.error('onAddNode prop is not provided to Toolbar');
     }
   };
   
