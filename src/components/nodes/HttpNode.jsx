@@ -26,7 +26,7 @@ const isGeocodeUrl = (url) => {
 const HttpNode = ({ id, data = {} }) => {
   const { updateNodeData, nodes, deleteNode } = useFlow();
   const upstream = useFlowData(id);
-
+// console.log(upstream,id)
   const upstreamFields = upstream
     ? Object.entries(upstream).map(([key, value]) => ({ key, value: String(value) }))
     : [];
@@ -40,24 +40,6 @@ const HttpNode = ({ id, data = {} }) => {
   const [queryParams, setQueryParams] = useState(() => normalizeList(data.queryParams));
   const [bodyFields, setBodyFields] = useState(() => normalizeList(data.body));
 
-  useEffect(() => {
-    if (!isEditingLabel) updateNodeData(id, { label: labelText });
-  }, [isEditingLabel, labelText, id, updateNodeData]);
-
-  useEffect(() => {
-    updateNodeData(id, {
-      url,
-      headers: Object.fromEntries(headers.map(h => [h.key, h.value])),
-      queryParams: Object.fromEntries(queryParams.map(p => [p.key, p.value])),
-      body: Object.fromEntries(bodyFields.map(b => [b.key, b.value]))
-    });
-  }, [url, headers, queryParams, bodyFields, id, updateNodeData]);
-
-  useEffect(() => {
-    if (upstream && typeof upstream === 'object') {
-      updateNodeData(id, { upstreamSnapshot: upstream });
-    }
-  }, [upstream, id, updateNodeData]);
 
   const executeRequest = async () => {
     updateNodeData(id, { isLoading: true, response: null, error: null });
@@ -132,6 +114,40 @@ const HttpNode = ({ id, data = {} }) => {
   const statusCode = data.response?.status;
   const isSuccess = statusCode >= 200 && statusCode < 300;
 
+
+  useEffect(() => {
+    if (!isEditingLabel) updateNodeData(id, { label: labelText });
+  }, [isEditingLabel, labelText, id, updateNodeData]);
+
+  useEffect(() => {
+    updateNodeData(id, {
+      url,
+      headers: Object.fromEntries(headers.map(h => [h.key, h.value])),
+      queryParams: Object.fromEntries(queryParams.map(p => [p.key, p.value])),
+      body: Object.fromEntries(bodyFields.map(b => [b.key, b.value]))
+    });
+  }, [url, headers, queryParams, bodyFields, id, updateNodeData]);
+
+  useEffect(() => {
+    if (upstream && typeof upstream === 'object') {
+      updateNodeData(id, { upstreamSnapshot: upstream });
+    }
+  }, [upstream, id, updateNodeData]);
+
+  useEffect(() => {
+    // Populate fields if upstream already had a response (like lat/lng) — only run once if no queryParams yet
+    if (upstream && !data.response && Object.keys(data.queryParams || {}).length === 0) {
+      const snapshot = upstream;
+      if (snapshot && typeof snapshot === 'object') {
+        const queryFields = Object.entries(snapshot).map(([key, value]) => ({ key, value: String(value) }));
+        setQueryParams(queryFields);
+        updateNodeData(id, {
+          queryParams: Object.fromEntries(queryFields.map(p => [p.key, p.value]))
+        });
+      }
+    }
+  }, [upstream, id, data.response, data.queryParams, updateNodeData]);
+
   return (
     <div className="http-node border rounded-md shadow-md bg-white">
       <div className="node-header http flex items-center justify-between p-2 bg-blue-100">
@@ -151,7 +167,9 @@ const HttpNode = ({ id, data = {} }) => {
           )}
           {data.isLoading && <span className="ml-2 text-xs">Loading...</span>}
         </div>
-        <div className="flex items-center gap-2">
+        <div 
+        style={{color:'black'}}
+        className="flex items-center gap-">
           <select
             value={data.method}
             onChange={e => updateNodeData(id, { method: e.target.value })}

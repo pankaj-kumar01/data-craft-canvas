@@ -29,7 +29,7 @@ const GraphNode = ({ id, data }) => {
 
   return (
     <div className="graph-node border rounded-md shadow-md bg-white">
-      <div className="node-header graph flex items-center justify-between p-2 bg-green-100">
+      <div style={{background:'green'}} className="node-header graph flex items-center justify-between p-2 bg-green-100">
         <div className="flex items-center gap-2">
           {isEditingLabel ? (
             <input
