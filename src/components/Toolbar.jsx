@@ -1,112 +1,42 @@
-
-import React from 'react';
-import { 
-  Plus, 
-  Globe, 
-  Database, 
-  Save, 
-  Upload, 
-  Download,
-  RefreshCw
-} from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Plus, Globe, Database, Download, Upload, RefreshCw } from 'lucide-react';
 import { useFlow } from '../contexts/FlowContext';
 import { toast } from '../components/ui/use-toast';
 
 const Toolbar = ({ onAddNode }) => {
   const { exportFlow, importFlow, resetFlow } = useFlow();
-  
-  // Export, import, reset handlers are kept the same
-  
-  const handleExport = () => {
-    const flow = exportFlow();
-    const dataStr = JSON.stringify(flow, null, 2);
-    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-    
-    const exportFileDefaultName = `flow-${new Date().toISOString().slice(0, 10)}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    toast({
-      title: "Flow Exported",
-      description: "Your flow has been exported as JSON",
-    });
-  };
-  
-  const handleImport = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const flow = JSON.parse(event.target.result);
-          const success = importFlow(flow);
-          
-          if (success) {
-            toast({
-              title: "Flow Imported",
-              description: "Your flow has been imported successfully",
-            });
-          } else {
-            toast({
-              title: "Import Failed",
-              description: "The uploaded file is not a valid flow",
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          toast({
-            title: "Import Failed",
-            description: "Failed to parse the flow file",
-            variant: "destructive"
-          });
-        }
-      };
-      
-      reader.readAsText(file);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // Close menu on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
     };
-    
-    input.click();
-  };
-  
-  const handleReset = () => {
-    if (window.confirm('Are you sure you want to reset the flow? This will delete all nodes and edges.')) {
-      resetFlow();
-      toast({
-        title: "Flow Reset",
-        description: "Your flow has been reset to the initial state",
-      });
-    }
-  };
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
 
   const handleAddNodeClick = (type) => {
-    console.log('Add node button clicked with type:', type);
-    
-    if (typeof onAddNode === 'function') {
-      console.log('Calling onAddNode prop with type:', type);
-      onAddNode(type);
-    } else {
-      console.error('onAddNode prop is not a function:', onAddNode);
-    }
+    setMenuOpen(false);
+    onAddNode?.(type);
   };
-  
+
   return (
     <div className="toolbar fixed top-4 left-4 right-4 z-10 bg-white shadow-md rounded-lg p-2 flex items-center justify-between">
-      <div className="flex items-center">
-        <div className="dropdown relative group">
-          <button className="btn-toolbar flex items-center space-x-1 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
-            <Plus size={18} />
-            <span>Add Node</span>
-          </button>
-          <div className="dropdown-menu hidden group-hover:block absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10">
+      <div className="relative" ref={menuRef}>
+        <button
+          className="btn-toolbar flex items-center space-x-1 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          onClick={() => setMenuOpen(o => !o)}
+        >
+          <Plus size={18} />
+          <span>Add Node</span>
+        </button>
+
+        {menuOpen && (
+          <div className="absolute mt-2 w-48 bg-white rounded-md shadow-lg z-20">
             <button
               className="w-full flex items-center space-x-2 px-4 py-2 text-left hover:bg-gray-100 transition-colors"
               onClick={() => handleAddNodeClick('http')}
@@ -122,33 +52,69 @@ const Toolbar = ({ onAddNode }) => {
               <span>GraphQL Request</span>
             </button>
           </div>
-        </div>
+        )}
       </div>
-      
+
       <div className="flex items-center space-x-2">
         <button
-          className="btn-toolbar flex items-center space-x-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-          onClick={handleExport}
-          title="Export Flow"
+          className="btn-toolbar flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+          onClick={() => {
+            const flow = exportFlow();
+            const uri = `data:application/json;charset=utf-8,${encodeURIComponent(
+              JSON.stringify(flow, null, 2)
+            )}`;
+            const link = document.createElement('a');
+            link.href = uri;
+            link.download = `flow-${new Date().toISOString().slice(0,10)}.json`;
+            link.click();
+            toast({ title: 'Flow Exported', description: 'Your flow has been exported as JSON' });
+          }}
+          title="Export"
         >
           <Download size={18} />
-          <span className="hidden sm:inline">Export</span>
         </button>
         <button
-          className="btn-toolbar flex items-center space-x-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-          onClick={handleImport}
-          title="Import Flow"
+          className="btn-toolbar flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+          onClick={() => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                try {
+                  const flow = JSON.parse(ev.target.result);
+                  const ok = importFlow(flow);
+                  toast({
+                    title: ok ? 'Flow Imported' : 'Import Failed',
+                    description: ok ? 'Imported successfully' : 'Invalid flow file',
+                    variant: ok ? undefined : 'destructive'
+                  });
+                } catch {
+                  toast({ title: 'Import Failed', description: 'Could not parse file', variant: 'destructive' });
+                }
+              };
+              reader.readAsText(file);
+            };
+            input.click();
+          }}
+          title="Import"
         >
           <Upload size={18} />
-          <span className="hidden sm:inline">Import</span>
         </button>
         <button
-          className="btn-toolbar flex items-center space-x-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-          onClick={handleReset}
-          title="Reset Flow"
+          className="btn-toolbar flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+          onClick={() => {
+            if (window.confirm('Reset the flow? This deletes all nodes and edges.')) {
+              resetFlow();
+              toast({ title: 'Flow Reset', description: 'Flow has been reset' });
+            }
+          }}
+          title="Reset"
         >
           <RefreshCw size={18} />
-          <span className="hidden sm:inline">Reset</span>
         </button>
       </div>
     </div>

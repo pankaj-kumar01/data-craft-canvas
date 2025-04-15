@@ -1,10 +1,10 @@
-
-import React, { useCallback, useRef, useState, useEffect } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   ReactFlow,
   Background,
   Controls,
   MiniMap,
+  useReactFlow,
   Panel
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -26,8 +26,8 @@ const nodeTypes = {
 
 const FlowEditor = () => {
   const reactFlowWrapper = useRef(null);
-  const [rfInstance, setRfInstance] = useState(null);
-  
+  const { project } = useReactFlow();
+
   const {
     nodes,
     edges,
@@ -38,101 +38,59 @@ const FlowEditor = () => {
     showContextMenu,
     hideContextMenu
   } = useFlow();
-  
-  // Log the values for debugging
-  useEffect(() => {
-    console.log('FlowEditor - Current state:', { 
-      nodesCount: nodes.length,
-      edgesCount: edges.length,
-      rfInstanceExists: !!rfInstance,
-      wrapperExists: !!reactFlowWrapper.current
-    });
-  }, [nodes, edges, rfInstance]);
-  
+
   const onAddNode = useCallback(
     (type) => {
-      console.log('onAddNode called with type:', type);
-      console.log('RF instance exists:', !!rfInstance);
-      console.log('Wrapper exists:', !!reactFlowWrapper.current);
-      
-      if (!reactFlowWrapper.current) {
-        console.error('Cannot add node: reactFlowWrapper not available');
+      console.log('wrapper:', reactFlowWrapper.current);
+      console.log('project fn:', project);
+      if (!reactFlowWrapper.current || !project) {
+        console.error('Cannot add node: missing wrapper or project fn');
         return;
       }
-      
-      if (!rfInstance) {
-        console.error('Cannot add node: RF instance not available');
-        return;
-      }
-      
-      try {
-        // Get the center position of the viewport
-        const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-        console.log('Flow bounds:', reactFlowBounds);
-        
-        const position = rfInstance.project({
-          x: (reactFlowBounds.width / 2) - 140,
-          y: (reactFlowBounds.height / 2) - 100
-        });
-        
-        console.log('Calculated position:', position);
-        
-        // Add the node with the calculated position
-        addNode(type, position);
-      } catch (error) {
-        console.error('Error adding node:', error);
-      }
+
+      const bounds = reactFlowWrapper.current.getBoundingClientRect();
+      const position = project({
+        x: bounds.width / 2 - 140,
+        y: bounds.height / 2 - 100
+      });
+
+      console.log('Adding node of type:', type, 'at position:', position);
+      addNode(type, position);
     },
-    [rfInstance, addNode]
+    [project, addNode]
   );
-  
+
   const onNodeContextMenu = useCallback(
     (event, node) => {
-      // Prevent native context menu from showing
       event.preventDefault();
-      
       const pane = reactFlowWrapper.current.querySelector('.react-flow__pane');
       const { top, left } = pane.getBoundingClientRect();
-      
       showContextMenu(
-        {
-          x: event.clientX - left,
-          y: event.clientY - top
-        },
+        { x: event.clientX - left, y: event.clientY - top },
         node.id
       );
     },
     [showContextMenu]
   );
-  
+
   const onEdgeContextMenu = useCallback(
     (event, edge) => {
       event.preventDefault();
-      
       const pane = reactFlowWrapper.current.querySelector('.react-flow__pane');
       const { top, left } = pane.getBoundingClientRect();
-      
       showContextMenu(
-        {
-          x: event.clientX - left,
-          y: event.clientY - top
-        },
+        { x: event.clientX - left, y: event.clientY - top },
         null,
         edge.id
       );
     },
     [showContextMenu]
   );
-  
+
   const onPaneClick = useCallback(() => {
     hideContextMenu();
   }, [hideContextMenu]);
 
-  const onInit = useCallback((reactFlowInstance) => {
-    console.log('Flow initialized with instance:', reactFlowInstance);
-    setRfInstance(reactFlowInstance);
-  }, []);
-  
   return (
     <div className="flow-editor w-full h-screen" ref={reactFlowWrapper}>
       <ReactFlow
@@ -145,7 +103,6 @@ const FlowEditor = () => {
         onEdgeContextMenu={onEdgeContextMenu}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
-        onInit={onInit}
         fitView
         attributionPosition="bottom-right"
         minZoom={0.2}
