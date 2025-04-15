@@ -5,7 +5,6 @@ import {
   Background,
   Controls,
   MiniMap,
-  useReactFlow,
   Panel
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -40,24 +39,49 @@ const FlowEditor = () => {
     hideContextMenu
   } = useFlow();
   
+  // Log the values for debugging
+  useEffect(() => {
+    console.log('FlowEditor - Current state:', { 
+      nodesCount: nodes.length,
+      edgesCount: edges.length,
+      rfInstanceExists: !!rfInstance,
+      wrapperExists: !!reactFlowWrapper.current
+    });
+  }, [nodes, edges, rfInstance]);
+  
   const onAddNode = useCallback(
     (type) => {
-      if (!reactFlowWrapper.current || !rfInstance) {
-        console.log('Cannot add node: React Flow instance not available');
+      console.log('onAddNode called with type:', type);
+      console.log('RF instance exists:', !!rfInstance);
+      console.log('Wrapper exists:', !!reactFlowWrapper.current);
+      
+      if (!reactFlowWrapper.current) {
+        console.error('Cannot add node: reactFlowWrapper not available');
         return;
       }
       
-      // Get the center position of the viewport
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const position = rfInstance.project({
-        x: (reactFlowBounds.width / 2) - 140,
-        y: (reactFlowBounds.height / 2) - 100
-      });
+      if (!rfInstance) {
+        console.error('Cannot add node: RF instance not available');
+        return;
+      }
       
-      console.log('Adding node of type:', type, 'at position:', position);
-      
-      // Add the node with the calculated position
-      addNode(type, position);
+      try {
+        // Get the center position of the viewport
+        const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+        console.log('Flow bounds:', reactFlowBounds);
+        
+        const position = rfInstance.project({
+          x: (reactFlowBounds.width / 2) - 140,
+          y: (reactFlowBounds.height / 2) - 100
+        });
+        
+        console.log('Calculated position:', position);
+        
+        // Add the node with the calculated position
+        addNode(type, position);
+      } catch (error) {
+        console.error('Error adding node:', error);
+      }
     },
     [rfInstance, addNode]
   );
@@ -105,7 +129,7 @@ const FlowEditor = () => {
   }, [hideContextMenu]);
 
   const onInit = useCallback((reactFlowInstance) => {
-    console.log('Flow initialized', reactFlowInstance);
+    console.log('Flow initialized with instance:', reactFlowInstance);
     setRfInstance(reactFlowInstance);
   }, []);
   

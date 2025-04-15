@@ -15,6 +15,8 @@ import { toast } from '../components/ui/use-toast';
 const Toolbar = ({ onAddNode }) => {
   const { exportFlow, importFlow, resetFlow } = useFlow();
   
+  // Export, import, reset handlers are kept the same
+  
   const handleExport = () => {
     const flow = exportFlow();
     const dataStr = JSON.stringify(flow, null, 2);
@@ -86,11 +88,13 @@ const Toolbar = ({ onAddNode }) => {
   };
 
   const handleAddNodeClick = (type) => {
-    console.log('Add node button clicked:', type);
-    if (onAddNode) {
+    console.log('Add node button clicked with type:', type);
+    
+    if (typeof onAddNode === 'function') {
+      console.log('Calling onAddNode prop with type:', type);
       onAddNode(type);
     } else {
-      console.error('onAddNode prop is not provided to Toolbar');
+      console.error('onAddNode prop is not a function:', onAddNode);
     }
   };
   
