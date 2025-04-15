@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { useReactFlow, Node, Edge } from '@xyflow/react';
 
@@ -5,6 +6,7 @@ interface NodeData {
   response?: {
     data?: any;
   };
+  [key: string]: any; // Add index signature to satisfy type constraint
 }
 
 /**
