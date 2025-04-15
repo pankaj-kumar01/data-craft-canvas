@@ -1,7 +1,12 @@
 
-// src/hooks/useFlowData.ts
 import { useMemo } from 'react';
 import { useReactFlow, Node, Edge } from '@xyflow/react';
+
+interface NodeData {
+  response?: {
+    data?: any;
+  };
+}
 
 /**
  * Returns the `.data.response.data` from the first upstream node, if any.
@@ -11,7 +16,7 @@ export function useFlowData(nodeId: string): any | null {
 
   return useMemo(() => {
     try {
-      const nodes: Node[] = getNodes();
+      const nodes: Node<NodeData>[] = getNodes();
       const edges: Edge[] = getEdges();
 
       // Find an edge whose target matches this node
@@ -41,3 +46,4 @@ export function useFlowData(nodeId: string): any | null {
     }
   }, [nodeId, getNodes, getEdges]);
 }
+
