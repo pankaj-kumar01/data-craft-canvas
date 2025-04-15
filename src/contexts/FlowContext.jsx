@@ -132,7 +132,7 @@ export const FlowProvider = ({ children }) => {
         graphql: {
           type: 'graphqlNode',
           data: {
-            label: 'GraphQL Request',
+            label: 'Graph',
             type: 'graphql',
             endpoint: '',
             query: '',
@@ -166,6 +166,7 @@ export const FlowProvider = ({ children }) => {
   // Update node data
   const updateNodeData = useCallback(
     (nodeId, data) => {
+      console.log(nodeId,data)
       setNodes(prevNodes => prevNodes.map((node) => {
         if (node.id === nodeId) {
           return {

@@ -18,6 +18,9 @@ export function useFlowData(nodeId: string): any | null {
 
     // Find the source node by ID
     const src = nodes.find(n => n.id === incoming.source);
+    console.log(src)
     return src?.data?.response?.data ?? null;
   }, [nodeId, getNodes, getEdges]);
 }
+
+

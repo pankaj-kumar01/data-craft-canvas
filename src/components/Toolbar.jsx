@@ -49,7 +49,7 @@ const Toolbar = ({ onAddNode }) => {
               onClick={() => handleAddNodeClick('graphql')}
             >
               <Database size={16} />
-              <span>GraphQL Request</span>
+              <span>Graphs</span>
             </button>
           </div>
         )}
