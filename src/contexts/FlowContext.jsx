@@ -2,7 +2,6 @@ import React, { createContext, useState, useContext, useCallback, useEffect } fr
 import { addEdge, applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 
 const STORAGE_KEY = 'flow-editor-state';
-
 const generateNodeId = (type) => `${type}-${Date.now()}`;
 const generateEdgeId = (source, target) => `edge-${source}-${target}-${Date.now()}`;
 
@@ -50,12 +49,15 @@ export const FlowProvider = ({ children }) => {
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [contextMenu, setContextMenu] = useState({ visible: false, position: { x: 0, y: 0 }, nodeId: null, edgeId: null });
 
-  useEffect(() => {
+  const updateLocalStorage=()=>{
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ nodes, edges }));
     } catch (error) {
       console.error('Failed to persist state:', error);
     }
+  }
+  useEffect(() => {
+    updateLocalStorage();
   }, [nodes, edges]);
 
   const onNodesChange = useCallback((changes) => {
@@ -74,7 +76,6 @@ export const FlowProvider = ({ children }) => {
     };
     setEdges((eds) => addEdge(newEdge, eds));
 
-    // 🧠 Patch: trigger update in target node to refresh useFlowData
     setNodes((prev) => prev.map((n) =>
       n.id === connection.target ? { ...n, data: { ...n.data, triggerUpdate: Date.now() } } : n
     ));
@@ -100,11 +101,11 @@ export const FlowProvider = ({ children }) => {
           isCollapsed: false
         }
       },
-      graphql: {
-        type: 'graphqlNode',
+      graph: {
+        type: 'graphNode',
         data: {
           label: 'Graph',
-          type: 'graphql',
+          type: 'graph',
           endpoint: '',
           query: '',
           variables: '',
@@ -133,6 +134,7 @@ export const FlowProvider = ({ children }) => {
   }, []);
 
   const updateNodeData = useCallback((nodeId, data) => {
+    console.log(nodeId)
     setNodes(prevNodes => prevNodes.map((node) =>
       node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
     ));
@@ -208,7 +210,8 @@ export const FlowProvider = ({ children }) => {
         hideContextMenu,
         exportFlow,
         importFlow,
-        resetFlow
+        resetFlow,
+        updateLocalStorage
       }}
     >
       {children}

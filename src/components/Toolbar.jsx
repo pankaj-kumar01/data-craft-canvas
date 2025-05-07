@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Globe, Database, Download, Upload, RefreshCw } from 'lucide-react';
+import { Plus, Globe, Database, Download, Upload, RefreshCw, PlayIcon } from 'lucide-react';
 import { useFlow } from '../contexts/FlowContext';
 import { toast } from '../components/ui/use-toast';
-
-const Toolbar = ({ onAddNode }) => {
+import { runNode } from "../utils/runNode";
+import FlowRunner from "./FlowRunner";
+const Toolbar = ({ onAddNode,togglePopUp }) => {
   const { exportFlow, importFlow, resetFlow } = useFlow();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -24,7 +25,9 @@ const Toolbar = ({ onAddNode }) => {
     onAddNode?.(type);
   };
 
+
   return (
+    <>
     <div className="toolbar fixed top-4 left-4 right-4 z-10 bg-white shadow-md rounded-lg p-2 flex items-center justify-between">
       <div className="relative" ref={menuRef}>
         <button
@@ -49,7 +52,7 @@ const Toolbar = ({ onAddNode }) => {
             <button
               style={{ gap: "4px" }}
               className="w-full flex items-center space-x-2 px-4 py-2 text-left hover:bg-gray-100 transition-colors"
-              onClick={() => handleAddNodeClick("graphql")}
+              onClick={() => handleAddNodeClick("graph")}
             >
               <Database size={16} />
               <span>Graphs</span>
@@ -137,8 +140,11 @@ const Toolbar = ({ onAddNode }) => {
         >
           <RefreshCw size={18} />
         </button>
+        <FlowRunner runNode={runNode} togglePopUp={togglePopUp} />
       </div>
     </div>
+  
+    </>
   );
 };
 

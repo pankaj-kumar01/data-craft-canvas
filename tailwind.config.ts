@@ -4,10 +4,11 @@ import type { Config } from "tailwindcss";
 export default {
 	darkMode: ["class"],
 	content: [
-		"./pages/**/*.{ts,tsx}",
-		"./components/**/*.{ts,tsx}",
-		"./app/**/*.{ts,tsx}",
-		"./src/**/*.{ts,tsx}",
+		"./pages/**/*.{js,ts,jsx,tsx,mdx}",
+		"./components/**/*.{js,ts,jsx,tsx,mdx}",
+		"./app/**/*.{js,ts,jsx,tsx,mdx}",
+		"./src/**/*.{js,ts,jsx,tsx,mdx}",
+		"./public/**/*.html",
 	],
 	prefix: "",
 	theme: {
@@ -76,7 +77,7 @@ export default {
 					header: {
 						start: '#FF8A65',
 						http: '#42A5F5',
-						graphql: '#AB47BC'
+						graph: '#AB47BC'
 					}
 				}
 			},

@@ -137,8 +137,8 @@
   @apply bg-node-header-http;
 }
 
-.node-header.graphql {
-  @apply bg-node-header-graphql;
+.node-header.graph{
+  @apply bg-node-header-graph;
 }
 
 .node-content {

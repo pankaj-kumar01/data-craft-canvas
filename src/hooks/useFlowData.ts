@@ -9,9 +9,6 @@ interface NodeData {
   [key: string]: any; // Add index signature to satisfy type constraint
 }
 
-/**
- * Returns the `.data.response.data` from the first upstream node, if any.
- */
 export function useFlowData(nodeId: string): any | null {
   const { getNodes, getEdges } = useReactFlow();
 
@@ -20,9 +17,13 @@ export function useFlowData(nodeId: string): any | null {
       const nodes: Node<NodeData>[] = getNodes();
       const edges: Edge[] = getEdges();
 
+      if (nodeId === 'start-node'){
+        const sourceNode = nodes.find(n => n.id ==='start-node');
+        return sourceNode?.data?.fields
+      }
       const incoming = edges.find(e => e.target === nodeId);
-      if (!incoming) return null;
 
+      if (!incoming) return null;
       const sourceNode = nodes.find(n => n.id === incoming.source);
       if (!sourceNode?.data?.response?.data) return null;
 

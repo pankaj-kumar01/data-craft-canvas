@@ -26,7 +26,7 @@
   background-color: #42A5F5;
 }
 
-.node-header.graphql {
+.node-header.graph {
   background-color: #AB47BC;
 }
 
@@ -48,8 +48,8 @@
   border: 1px solid #BBDEFB;
 }
 
-/* GraphQL Node Styles */
-.graphql-node {
+/* Graph Node Styles */
+.graph-node {
   border: 1px solid #E1BEE7;
 }
 
