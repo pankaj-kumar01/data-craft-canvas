@@ -25,9 +25,11 @@ export function useFlowData(nodeId: string): any | null {
 
       if (!incoming) return null;
       const sourceNode = nodes.find(n => n.id === incoming.source);
-      if (!sourceNode?.data?.response?.data) return null;
+      if (sourceNode.type === 'startNode' || sourceNode.id === 'start-node') {
+        return sourceNode.data.fields ?? {};
+      }
 
-      return sourceNode.data.response.data;
+      return sourceNode.data.response.data ?? null;
     } catch (error) {
       console.error(`Error in useFlowData for node ${nodeId}:`, error);
       return null;

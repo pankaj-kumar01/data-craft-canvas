@@ -134,7 +134,6 @@ export const FlowProvider = ({ children }) => {
   }, []);
 
   const updateNodeData = useCallback((nodeId, data) => {
-    console.log(nodeId)
     setNodes(prevNodes => prevNodes.map((node) =>
       node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
     ));

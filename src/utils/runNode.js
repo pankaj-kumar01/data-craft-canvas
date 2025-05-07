@@ -1,53 +1,59 @@
-import axios from "axios";
+import axios from 'axios';
 import get from 'lodash/get';
 
-export async function runNode(node, results, incomers,updateNodeData) {
+export async function runNode(node, results, incomers) {
+  const incomingIds = incomers.map(i => i.source);
 
-  const incomingNodeIdArray = incomers?.length>0 && incomers?.map((incoming) => incoming?.source);
 
-  function getParams(queryParams) {
-    var prevApiResponse = {}
-    const resolvedParams = {};
+  function resolveParams(queryParams) {
+    const out = {};
+    const PREFIX = /^upstream(?:\.data)?\./;
+    Object.entries(queryParams || {}).forEach(([key, val]) => {
+      if (typeof val === 'string' && val.startsWith('upstream.')) {
+        const path = val.replace(PREFIX, '');
+        // find the last upstream that wrote this key
 
-    incomingNodeIdArray?.length > 0 && incomingNodeIdArray.forEach((incomingData) => {
-      prevApiResponse = results[`${incomingData}`];
+        for (let i = incomingIds.length - 1; i >= 0; i--) {
+          const upstreamData = results[incomingIds[i]] || {};
 
-      Object.entries(queryParams).forEach(([paramKey, paramVal]) => {
-        if (typeof paramVal === "string" && paramVal.startsWith("upstream.")) {
-          // strip off "upstream." and grab the real value via lodash.get
-          const path = paramVal.replace(/^upstream\./, "");
-          resolvedParams[paramKey] = get(prevApiResponse, path);
-        } else {
-          resolvedParams[paramKey] = paramVal;
+          const v = get(upstreamData, path);
+          if (v !== undefined) {
+            out[key] = v;
+            return;
+          }
         }
-      });
-    })
-    return incomingNodeIdArray?.length > 0? resolvedParams : queryParams;
+        out[key] = undefined;
+      } else {
+        out[key] = val;
+      }
+    });
+    return out;
   }
 
   switch (node.type) {
-
-    case 'httpNode':
-      {
-        // Node data should, include method, url, params, headers, body, etc.
-        updateNodeData(node, {
-          isLoading: true,
-          response: null,
-          error: null,
-        });
-        const { method, url, queryParams, headers, body } = node.data;
-        const endpoint = url.trim()
-        const params = getParams(queryParams)
-     
-        const response = await axios({ method, url:endpoint, params: { ...params }, headers:{...headers}, data: {...body} });
-        return response;
-      }
-    case 'graphNode': {
-      return response.data;
+    case 'httpNode': {
+      const { method, url, queryParams, headers, body } = node.data;
+      const response = await axios({
+        method,
+        url: url.trim(),
+        params: resolveParams(queryParams),
+        headers,
+        data: body,
+      });
+      // return the full response so we have both .status and .data
+      return response;
     }
+
     case 'startNode':
-    case 'start-node':
-      return node?.data?.fields || {}
+    case 'start-node': {
+      // simply return its user-entered fields as the "response"
+      return {
+        status: 200,
+        data: node.data.fields || {},
+      };
+    }
+
+    // you can add more node types here...
     default:
       throw new Error(`Unknown node type: ${node.type}`);
   }

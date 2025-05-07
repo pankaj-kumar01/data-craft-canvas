@@ -20,17 +20,18 @@ const normalizeList = (maybeList) => {
   return [{ key: "", value: "" }];
 };
 
-
-const HttpNode = ({id, data = {} }) => {
+const HttpNode = ({ id, data = {} }) => {
   const { updateNodeData, nodes, deleteNode, edges } = useFlow();
 
   const thisNode = nodes.find((n) => n.id === id);
-  if(!thisNode) return;
+  if (!thisNode) return;
   const incomers = getIncomers(thisNode, nodes, edges);
 
   const upstreamNodeId = incomers.map((node) => node.id)[0];
-
-  const upstream = useFlowData(id);
+  let upstream;
+  if (upstreamNodeId === "start-node") {
+    upstream = useFlowData(upstreamNodeId);
+  } else upstream = useFlowData(id);
 
   const upstreamFields = upstream;
 
@@ -54,28 +55,30 @@ const HttpNode = ({id, data = {} }) => {
     const rawParams = Object.fromEntries(
       queryParams.map((p) => [p.key, p.value])
     );
-
+    const PREFIX = /^upstream(?:\.data)?\./;
     const rawBody =
       data.method === "POST"
         ? Object.fromEntries(bodyFields.map((b) => [b.key, b.value]))
         : undefined;
 
     const resolvedParams = {};
+
     Object.entries(rawParams).forEach(([paramKey, paramVal]) => {
       if (typeof paramVal === "string" && paramVal.startsWith("upstream.")) {
         // strip off "upstream." and grab the real value via lodash.get
-        const path = paramVal.replace(/^upstream\./, "");
+        const path = paramVal.replace(PREFIX, "");
         resolvedParams[paramKey] = get(upstream, path);
       } else {
         resolvedParams[paramKey] = paramVal;
       }
     });
 
+
     const resolvedBody =
       rawBody &&
       Object.entries(rawBody).reduce((acc, [k, v]) => {
         if (typeof v === "string" && v.startsWith("upstream.")) {
-          const path = v.replace(/^upstream\./, "");
+          const path = v.replace(PREFIX, "");
           acc[k] = get(upstream, path);
         } else {
           acc[k] = v;
@@ -98,13 +101,12 @@ const HttpNode = ({id, data = {} }) => {
     let responseData;
     try {
       const response = await executeHttpRequest(payload, nodes);
-       responseData = response;
+      responseData = response;
 
       updateNodeData(id, {
         isLoading: false,
         response: { data: responseData },
       });
-
     } catch (err) {
       updateNodeData(id, { isLoading: false, error: { message: err.message } });
     } finally {
@@ -116,7 +118,7 @@ const HttpNode = ({id, data = {} }) => {
         : updateNodeData(id, {
             isLoading: false,
             error: { message: "Something went wrong!" },
-          });  
+          });
     }
   };
 
@@ -175,9 +177,8 @@ const HttpNode = ({id, data = {} }) => {
   };
   const hasResponse = !!data.response;
   const isError = !!data.error;
-  const statusCode = data.response?.status;
+  const statusCode = data.response?.status || data.response?.data?.status ;
   const isSuccess = statusCode >= 200 && statusCode < 300;
-// console.log(id, data)
   useEffect(() => {
     if (!isEditingLabel) updateNodeData(id, { label: labelText });
   }, [isEditingLabel, labelText, id, updateNodeData]);
@@ -196,8 +197,6 @@ const HttpNode = ({id, data = {} }) => {
       updateNodeData(id, { upstreamSnapshot: upstream });
     }
   }, [upstream, id, updateNodeData]);
-
-
 
   return (
     <div className="http-node border rounded-md shadow-md bg-white">
